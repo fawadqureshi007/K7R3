@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="k7r3.jpg" alt="K7R3 Logo" width="220">
+  <img src="k7r3.jpeg" alt="K7R3 Logo" width="300">
 </p>
 
 <h1 align="center">K7R3</h1>
