@@ -7,7 +7,7 @@
 <p align="center">
   Practical Reconnaissance & Bug Bounty Field Guide
 </p>
-# K7R3
+
 
 ### Practical Reconnaissance & Bug Bounty Field Guide
 
