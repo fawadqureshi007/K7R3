@@ -1,4 +1,12 @@
+<p align="center">
+  <img src="k7r3.jpg" alt="K7R3 Logo" width="220">
+</p>
 
+<h1 align="center">K7R3</h1>
+
+<p align="center">
+  Practical Reconnaissance & Bug Bounty Field Guide
+</p>
 # K7R3
 
 ### Practical Reconnaissance & Bug Bounty Field Guide
