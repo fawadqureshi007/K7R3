@@ -1,9 +1,5 @@
-Absolutely — here is a cleaner, repo-ready README written in the field-manual / copy-paste playbook style you described.
 
-Use this as your main README:
-
-```md
-# ReconForge
+# K7R3
 
 Practical reconnaissance and attack surface mapping for security researchers.
 
