@@ -1,344 +1,1505 @@
-#ReconForge
 
-Reconnaissance & Attack Surface Mapping for Security Researchers
+# K7R3
 
-«Find assets. Understand infrastructure. Map applications. Correlate everything. Validate only what is authorized.»
+### Practical Reconnaissance & Bug Bounty Field Guide
 
-ReconForge is a practical reconnaissance methodology for:
+> **Find the surface. Map the application. Follow the data. Verify the lead.**
 
-- Bug bounty hunters
-- Penetration testers
-- Red teamers
-- Security researchers
-- Security students
-- CTF/lab practitioners
-
-The goal is not to run 50 tools and collect thousands of useless results.
-
-The goal is to answer:
-
-What belongs to the target?
-        ↓
-What assets exist?
-        ↓
-Which assets are alive?
-        ↓
-Where are they hosted?
-        ↓
-What services are exposed?
-        ↓
-What technologies are running?
-        ↓
-What applications exist?
-        ↓
-What endpoints and parameters exist?
-        ↓
-What existed historically?
-        ↓
-How are the assets connected?
-        ↓
-What deserves manual investigation?
-        ↓
-What can be safely validated within scope?
-
-ReconForge is methodology-first.
-
-Tools change.
-
-The methodology stays.
+K7R3 is a practical reconnaissance methodology for security researchers, bug bounty hunters, penetration testers, red teamers, and students working in authorized environments.
 
 ---
 
-Table of Contents
+## ⚡ What K7R3 Covers
 
-- "1. Authorization First" (#1-authorization-first)
-- "2. Recon Philosophy" (#2-recon-philosophy)
-- "3. Recon Mindset" (#3-recon-mindset)
-- "4. Complete Recon Workflow" (#4-complete-recon-workflow)
-- "5. Repository Structure" (#5-repository-structure)
-- "6. Installation" (#6-installation)
-- "7. ProjectDiscovery Installation" (#7-projectdiscovery-installation)
-- "8. Amass Installation" (#8-amass-installation)
-- "9. Scope Management" (#9-scope-management)
-- "10. Phase 0 — Target Profiling" (#10-phase-0--target-profiling)
-- "11. Phase 1 — Passive Reconnaissance" (#11-phase-1--passive-reconnaissance)
-- "12. Phase 2 — Subdomain Enumeration" (#12-phase-2--subdomain-enumeration)
-- "13. Phase 3 — Certificate Transparency" (#13-phase-3--certificate-transparency)
-- "14. Phase 4 — DNS Enumeration" (#14-phase-4--dns-enumeration)
-- "15. Phase 5 — IP & ASN Mapping" (#15-phase-5--ip--asn-mapping)
-- "16. Phase 6 — HTTP Discovery" (#16-phase-6--http-discovery)
-- "17. Phase 7 — Technology Fingerprinting" (#17-phase-7--technology-fingerprinting)
-- "18. Phase 8 — WAF/CDN Detection" (#18-phase-8--wafcdn-detection)
-- "19. Phase 9 — Port Discovery" (#19-phase-9--port-discovery)
-- "20. Phase 10 — Service Enumeration" (#20-phase-10--service-enumeration)
-- "21. Phase 11 — TLS Enumeration" (#21-phase-11--tls-enumeration)
-- "22. Phase 12 — Web Crawling" (#22-phase-12--web-crawling)
-- "23. Phase 13 — Historical URLs" (#23-phase-13--historical-urls)
-- "24. Phase 14 — Content Discovery" (#24-phase-14--content-discovery)
-- "25. Phase 15 — JavaScript Recon" (#25-phase-15--javascript-recon)
-- "26. Phase 16 — Source Maps" (#26-phase-16--source-maps)
-- "27. Phase 17 — API Discovery" (#27-phase-17--api-discovery)
-- "28. Phase 18 — Parameter Discovery" (#28-phase-18--parameter-discovery)
-- "29. Phase 19 — Authentication Surface Mapping" (#29-phase-19--authentication-surface-mapping)
-- "30. Phase 20 — Cloud & Infrastructure Recon" (#30-phase-20--cloud--infrastructure-recon)
-- "31. Phase 21 — Repository & Public-Code Recon" (#31-phase-21--repository--public-code-recon)
-- "32. Phase 22 — OSINT & Search Recon" (#32-phase-22--osint--search-recon)
-- "33. Phase 23 — Screenshots & Visual Mapping" (#33-phase-23--screenshots--visual-mapping)
-- "34. Phase 24 — Security Headers" (#34-phase-24--security-headers)
-- "35. Phase 25 — Vulnerability Intelligence" (#35-phase-25--vulnerability-intelligence)
-- "36. Phase 26 — Controlled Validation" (#36-phase-26--controlled-validation)
-- "37. Phase 27 — Asset Correlation" (#37-phase-27--asset-correlation)
-- "38. Phase 28 — Prioritization" (#38-phase-28--prioritization)
-- "39. Phase 29 — Manual Investigation" (#39-phase-29--manual-investigation)
-- "40. Phase 30 — Evidence Collection" (#40-phase-30--evidence-collection)
-- "41. Phase 31 — Reporting" (#41-phase-31--reporting)
-- "42. Phase 32 — Continuous Recon" (#42-phase-32--continuous-recon)
-- "43. 15-Minute Recon Workflow" (#43-15-minute-recon-workflow)
-- "44. Deep Recon Workflow" (#44-deep-recon-workflow)
-- "45. Useful Command Recipes" (#45-useful-command-recipes)
-- "46. Common Mistakes" (#46-common-mistakes)
-- "47. Troubleshooting" (#47-troubleshooting)
-- "48. Final Checklist" (#48-final-checklist)
+- Passive reconnaissance
+- Subdomain enumeration
+- DNS enumeration
+- HTTP probing
+- Technology fingerprinting
+- WAF identification
+- Port scanning
+- Service enumeration
+- TLS inspection
+- Web crawling
+- Historical URL discovery
+- JavaScript analysis
+- API discovery
+- Parameter discovery
+- Content discovery
+- Public source-code inspection
+- Automated security checks
+- Manual HTTP inspection
 
 ---
 
-1. Authorization First
+## ⚠️ Scope
 
-ReconForge is intended for authorized security testing only.
+Use K7R3 only against:
 
-Examples:
-
-- Bug bounty targets explicitly listed as in-scope
+- Assets explicitly included in a bug bounty program
 - Systems you own
-- Authorized penetration tests
-- Internal security assessments
-- CTFs
-- Security labs
-- Research environments where testing is permitted
+- Authorized penetration-testing engagements
+- Red-team environments where you have permission
+- CTFs and security labs
 
-Before scanning anything:
+> A discovered domain, IP, endpoint, or service is **not automatically in scope**.
 
-Read the program policy.
-Read the scope.
-Read exclusions.
-Read rate limits.
-Read prohibited techniques.
-Read testing windows.
-Read third-party restrictions.
-
-Do not assume:
-
-Discovered asset = automatically in scope
-
-For example:
-
-target.example.com
-        ↓
-CNAME
-        ↓
-third-party.provider.example
-        ↓
-shared infrastructure
-
-Finding the infrastructure does not automatically authorize testing the entire provider.
-
-Always verify scope.
-
-Never perform
-
-- Credential attacks
-- Password spraying
-- Persistence
-- Unauthorized access
-- Destructive testing
-- Data destruction
-- Denial-of-service activity
-- Mass exploitation
-- Testing third-party systems outside scope
-- Using discovered credentials/tokens to access systems unless explicitly authorized
-
-ReconForge focuses on:
-
-Discovery
-Enumeration
-Mapping
-Correlation
-Fingerprinting
-Controlled validation
-Evidence collection
+Always follow the target's rules, rate limits, and testing restrictions.
 
 ---
 
-2. Recon Philosophy
+# 🚀 Quick Start
 
-Bad reconnaissance:
+## Set Your Target
 
-Run tools
-    ↓
-Collect 100,000 results
-    ↓
-grep "interesting"
-    ↓
-Open random URLs
-    ↓
-Hope for a vulnerability
+```bash
+export TARGET=example.com
+````
 
-Better reconnaissance:
+ ## Create Workspace
 
-Scope
- ↓
-Passive discovery
- ↓
-Subdomains
- ↓
-DNS
- ↓
-IP / ASN
- ↓
-HTTP
- ↓
-Technology
- ↓
-Ports
- ↓
-Services
- ↓
-Crawling
- ↓
-Historical URLs
- ↓
-JavaScript
- ↓
-APIs
- ↓
-Parameters
- ↓
-Cloud / OSINT
- ↓
-Correlation
- ↓
-Manual investigation
- ↓
-Controlled validation
- ↓
-Evidence
- ↓
-Report
+```
+mkdir -p K7R3/{output,data/raw,data/screenshots,logs}
+cd K7R3
+```
 
-The objective is not to collect the largest dataset.
+ ## 1\. Find Subdomains
 
-The objective is to reduce uncertainty.
+```
+subfinder -d "$TARGET" -silent -o output/subfinder.txt
+```
 
----
+ **Purpose:** Passive subdomain discovery.
 
-3. Recon Mindset
+ ## 2\. Certificate Transparency
 
-Think in relationships.
+```
+curl -s "https://crt.sh/?q=%25.$TARGET&output=json" \
+| jq -r '.[].name_value' \
+| tr '\r' '\n' \
+| sort -u > output/crtsh.txt
+```
 
-Example:
+ **Purpose:** Find hostnames that have appeared in TLS certificates.
 
-dev.example.com
-        |
-        +---- DNS
-        |
-        +---- 203.0.113.10
-                    |
-                    +---- Cloud provider
-                    |
-                    +---- nginx
-                    |
-                    +---- Node.js
-                    |
-                    +---- React
-                    |
-                    +---- /api/v1
-                    |
-                    +---- /graphql
-                    |
-                    +---- JavaScript bundle
-                                |
-                                +---- internal API reference
-                                |
-                                +---- additional endpoint
+ ## 3\. Combine Results
 
-A single hostname can reveal:
+```
+cat output/subfinder.txt output/crtsh.txt \
+| sort -u > output/subdomains.txt
+```
 
-Hostname
-    ↓
-DNS
-    ↓
-IP
-    ↓
-ASN
-    ↓
-Provider
-    ↓
-Ports
-    ↓
-Services
-    ↓
-Web server
-    ↓
-Framework
-    ↓
-Application
-    ↓
-Endpoints
-    ↓
-Parameters
+ **Purpose:** Create one clean subdomain list.
 
-That relationship is more valuable than a raw subdomain count.
+ ## 4\. Resolve Hosts
+
+```
+dnsx -l output/subdomains.txt -silent -a -resp -o output/dns.txt
+```
+
+ **Purpose:** Resolve discovered hostnames and identify IP addresses.
+
+ ## 5\. Find Live Web Applications
+
+```
+httpx -l output/subdomains.txt \
+-silent \
+-status-code \
+-title \
+-tech-detect \
+-web-server \
+-follow-redirects \
+-o output/live.txt
+```
+
+ **Purpose:** Identify reachable HTTP/HTTPS services.
+
+ ## 6\. Extract Live URLs
+
+```
+awk '{print $1}' output/live.txt | sort -u > output/live-urls.txt
+```
+
+ ## 7\. Crawl Applications
+
+```
+katana -list output/live-urls.txt \
+-silent \
+-o output/endpoints.txt
+```
+
+ **Purpose:** Discover links, endpoints, forms, and JavaScript references.
+
+ ## 8\. Historical URLs
+
+```
+gau --subs "$TARGET" | sort -u > output/gau.txt
+
+waybackurls "$TARGET" | sort -u > output/wayback.txt
+```
+
+ **Purpose:** Find previously exposed URLs and functionality.
+
+ ## 9\. Build Final URL List
+
+```
+cat output/endpoints.txt \
+output/gau.txt \
+output/wayback.txt \
+| sort -u > output/urls.txt
+```
 
 ---
 
-4. Complete Recon Workflow
+ # 🛠️ Installation
 
-                    TARGET
-                       |
-             +---------+---------+
-             |                   |
-         PASSIVE              ACTIVE
-             |                   |
-       CT / OSINT             DNS
-       Search                 HTTP
-       Repos                  Ports
-       Archives              Crawling
-             |                   |
-             +---------+---------+
-                       |
-                  CORRELATION
-                       |
-        +--------------+--------------+
-        |              |              |
-       DNS            HTTP           IP
-        |              |              |
-        +--------------+--------------+
-                       |
-                  TECHNOLOGY
-                       |
-             +---------+---------+
-             |                   |
-            Web                 API
-             |                   |
-          JS / URLs          Parameters
-             |                   |
-             +---------+---------+
-                       |
-                  PRIORITIZE
-                       |
-                MANUAL REVIEW
-                       |
-             AUTHORIZED VALIDATION
-                       |
-                    REPORT
+ ## System Packages
+
+```
+sudo apt update
+
+sudo apt install -y \
+git \
+curl \
+wget \
+jq \
+unzip \
+dnsutils \
+whois \
+nmap \
+masscan \
+ffuf \
+gobuster \
+whatweb \
+wafw00f \
+ca-certificates
+```
+
+ ## ProjectDiscovery
+
+```
+go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+
+go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
+
+go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
+
+go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
+
+go install -v github.com/projectdiscovery/katana/cmd/katana@latest
+
+go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+```
+
+ ## URL Collection
+
+```
+go install github.com/lc/gau/v2/cmd/gau@latest
+
+go install github.com/tomnomnom/waybackurls@latest
+```
+
+ ## PATH
+
+```
+export PATH="$PATH:$HOME/go/bin"
+```
+
+ Permanent:
+
+```
+echo 'export PATH="$PATH:$HOME/go/bin"' >> ~/.bashrc
+source ~/.bashrc
+```
 
 ---
 
-5. Repository Structure
+ # 🔎 1. Subdomain Discovery
 
-Recommended structure:
+ ## Subfinder
 
-reconforge/
+ ### Basic
+
+```
+subfinder -d example.com -silent
+```
+
+ ### Save Results
+
+```
+subfinder -d example.com \
+-silent \
+-o subdomains.txt
+```
+
+ ### Multiple Domains
+
+```
+subfinder -dL domains.txt \
+-silent \
+-o subdomains.txt
+```
+
+ ### All Sources
+
+```
+subfinder -d example.com \
+-all \
+-silent \
+-o subdomains-all.txt
+```
+
+ ### JSON
+
+```
+subfinder -d example.com \
+-json \
+-o subdomains.json
+```
+
+---
+
+ # 🌐 2. Certificate Transparency
+
+```
+curl -s 'https://crt.sh/?q=%25.example.com&output=json' \
+| jq -r '.[].name_value' \
+| tr '\r' '\n' \
+| sort -u
+```
+
+ Save:
+
+```
+curl -s 'https://crt.sh/?q=%25.example.com&output=json' \
+| jq -r '.[].name_value' \
+| tr '\r' '\n' \
+| sort -u > crtsh.txt
+```
+
+ **Use it for:** Certificate transparency hostname discovery.
+
+---
+
+ # 🗺️ 3. Amass
+
+```
+amass enum -passive -d example.com
+```
+
+ Save:
+
+```
+amass enum -passive \
+-d example.com \
+-o amass.txt
+```
+
+ Source information:
+
+```
+amass enum -passive \
+-v \
+-src \
+-d example.com \
+-o amass-sources.txt
+```
+
+---
+
+ # 🧬 4. DNS Enumeration
+
+ ## Basic
+
+```
+dnsx -l subdomains.txt -silent
+```
+
+ ## A Records
+
+```
+dnsx -l subdomains.txt \
+-a \
+-resp \
+-o dns-a.txt
+```
+
+ ## CNAME
+
+```
+dnsx -l subdomains.txt \
+-cname \
+-resp \
+-o dns-cname.txt
+```
+
+ ## MX
+
+```
+dnsx -l subdomains.txt \
+-mx \
+-resp \
+-o dns-mx.txt
+```
+
+ ## TXT
+
+```
+dnsx -l subdomains.txt \
+-txt \
+-resp \
+-o dns-txt.txt
+```
+
+ ## Common Records
+
+```
+dnsx -l subdomains.txt \
+-a \
+-aaaa \
+-cname \
+-mx \
+-ns \
+-txt \
+-resp \
+-o dns.txt
+```
+
+---
+
+ # 🌍 5. Live Web Hosts
+
+ ## HTTPx
+
+```
+httpx -l subdomains.txt -silent
+```
+
+ Status and title:
+
+```
+httpx -l subdomains.txt \
+-silent \
+-status-code \
+-title
+```
+
+ Technology detection:
+
+```
+httpx -l subdomains.txt \
+-silent \
+-status-code \
+-title \
+-tech-detect \
+-web-server \
+-follow-redirects
+```
+
+ Save:
+
+```
+httpx -l subdomains.txt \
+-silent \
+-status-code \
+-title \
+-tech-detect \
+-web-server \
+-follow-redirects \
+-o live.txt
+```
+
+ JSON:
+
+```
+httpx -l subdomains.txt \
+-silent \
+-json \
+-o httpx.json
+```
+
+---
+
+ # 🧰 6. Technology Fingerprinting
+
+ ## WhatWeb
+
+```
+whatweb https://example.com
+```
+
+ Verbose:
+
+```
+whatweb -v https://example.com
+```
+
+ Aggressive:
+
+```
+whatweb -a 3 https://example.com
+```
+
+ Multiple targets:
+
+```
+whatweb -i live-urls.txt
+```
+
+---
+
+ # 🛡️ 7. WAF Detection
+
+```
+wafw00f https://example.com
+```
+
+ Multiple targets:
+
+```
+wafw00f -i live-urls.txt
+```
+
+ > WAF detection is reconnaissance information. Do not attempt bypasses unless explicitly authorized.
+
+---
+
+ # 🔌 8. Port Discovery
+
+ ## Naabu
+
+ Top 100:
+
+```
+naabu -list ips.txt \
+-top-ports 100 \
+-silent \
+-o ports.txt
+```
+
+ Top 1000:
+
+```
+naabu -list ips.txt \
+-top-ports 1000 \
+-silent \
+-o top-ports.txt
+```
+
+ Web ports:
+
+```
+naabu -list ips.txt \
+-p 80,443,8000,8080,8081,8443,8888 \
+-silent \
+-o web-ports.txt
+```
+
+ Full range:
+
+```
+naabu -list ips.txt \
+-p 1-65535 \
+-silent \
+-o all-ports.txt
+```
+
+---
+
+ # 🔬 9. Service Enumeration
+
+ ## Nmap
+
+ Version detection:
+
+```
+nmap -sV 203.0.113.10
+```
+
+ Default scripts:
+
+```
+nmap -sC -sV 203.0.113.10
+```
+
+ All ports:
+
+```
+nmap -p- -sV 203.0.113.10
+```
+
+ Web ports:
+
+```
+nmap -p 80,443,8080,8443 \
+-sV \
+203.0.113.10
+```
+
+ Save:
+
+```
+nmap -oA nmap-result 203.0.113.10
+```
+
+ HTTP:
+
+```
+nmap \
+--script http-title,http-headers \
+-p 80,443 \
+203.0.113.10
+```
+
+ TLS:
+
+```
+nmap \
+--script ssl-cert,ssl-enum-ciphers \
+-p 443 \
+203.0.113.10
+```
+
+---
+
+ # 🔐 10. TLS Inspection
+
+ ## SSLScan
+
+```
+sslscan example.com:443
+```
+
+ ## OpenSSL
+
+```
+openssl s_client \
+-connect example.com:443 \
+-servername example.com </dev/null
+```
+
+ Certificate information:
+
+```
+openssl s_client \
+-connect example.com:443 \
+-servername example.com </dev/null 2>/dev/null \
+| openssl x509 \
+-noout \
+-subject \
+-issuer \
+-dates \
+-ext subjectAltName
+```
+
+---
+
+ # 🕷️ 11. Web Crawling
+
+ ## Katana
+
+ Basic:
+
+```
+katana \
+-u https://example.com \
+-silent \
+-o katana.txt
+```
+
+ Multiple targets:
+
+```
+katana \
+-list live-urls.txt \
+-silent \
+-o endpoints.txt
+```
+
+ Depth:
+
+```
+katana \
+-u https://example.com \
+-depth 3 \
+-silent
+```
+
+ JavaScript:
+
+```
+katana \
+-list live-urls.txt \
+-jc \
+-silent \
+-o js-endpoints.txt
+```
+
+ Known files:
+
+```
+katana \
+-u https://example.com \
+-known-files all \
+-silent
+```
+
+---
+
+ # 🕰️ 12. Historical URLs
+
+ ## GAU
+
+```
+gau example.com \
+| sort -u \
+> gau.txt
+```
+
+ Subdomains:
+
+```
+gau --subs example.com \
+| sort -u \
+> gau-subs.txt
+```
+
+ Multiple providers:
+
+```
+gau \
+--providers wayback,commoncrawl,otx,urlscan \
+example.com \
+| sort -u \
+> gau-all.txt
+```
+
+ ## Waybackurls
+
+```
+waybackurls example.com \
+| sort -u \
+> wayback.txt
+```
+
+ Multiple subdomains:
+
+```
+cat subdomains.txt \
+| waybackurls \
+| sort -u \
+> historical.txt
+```
+
+---
+
+ # 🧹 13. URL Filtering
+
+ ## APIs
+
+```
+grep -Ei \
+'/(api|api/v[0-9]+|graphql|swagger|openapi|admin|internal|debug|login|oauth|upload|download|export)' \
+urls.txt \
+| sort -u \
+> interesting.txt
+```
+
+ ## Interesting Files
+
+```
+grep -Ei \
+'\.(js|json|map|xml|txt|conf|config|bak|old|zip)([?#]|$)' \
+urls.txt \
+| sort -u \
+> interesting-files.txt
+```
+
+ ## Parameters
+
+```
+grep -E '\?.+=' urls.txt \
+| sort -u \
+> parameterized.txt
+```
+
+---
+
+ # 📜 14. JavaScript Recon
+
+ Find JavaScript:
+
+```
+grep -Ei '\.js([?#]|$)' urls.txt \
+| sort -u \
+> javascript.txt
+```
+
+ Create directory:
+
+```
+mkdir -p data/raw/js
+```
+
+ Download JavaScript:
+
+```
+while read -r url; do
+    name=$(printf '%s' "$url" \
+    | sha256sum \
+    | cut -d' ' -f1)
+
+    curl -ksSL \
+    --max-time 15 \
+    "$url" \
+    -o "data/raw/js/$name.js"
+done < javascript.txt
+```
+
+ Search references:
+
+```
+grep -RniE \
+'api|graphql|swagger|openapi|admin|internal|oauth|upload|download' \
+data/raw/js/ \
+| head -n 500
+```
+
+ Source maps:
+
+```
+grep -Rni \
+'sourceMappingURL' \
+data/raw/js/
+```
+
+ External hosts:
+
+```
+grep -RhoE \
+'https?://[^" ]+' \
+data/raw/js/ \
+| sort -u \
+> js-hosts.txt
+```
+
+---
+
+ # 🗺️ 15. Source Maps
+
+ Find maps:
+
+```
+grep -Ei \
+'\.map([?#]|$)' \
+urls.txt \
+| sort -u \
+> source-maps.txt
+```
+
+ Inspect references:
+
+```
+grep -Rni \
+'sourceMappingURL' \
+data/raw/js/
+```
+
+ Download:
+
+```
+curl -ksSL \
+https://example.com/app.js.map \
+-o app.js.map
+```
+
+ Source filenames:
+
+```
+jq '.sources' app.js.map
+```
+
+ Embedded source:
+
+```
+jq '.sourcesContent[]' \
+app.js.map \
+2>/dev/null
+```
+
+---
+
+ # 🔗 16. API Discovery
+
+ Check common documentation:
+
+```
+for p in \
+swagger.json \
+openapi.json \
+api-docs \
+swagger/v1/swagger.json \
+api/swagger.json \
+api/openapi.json
+do
+    curl -sk \
+    -o /dev/null \
+    -w "%{http_code} %{url_effective}\n" \
+    "https://example.com/$p"
+done
+```
+
+ OpenAPI:
+
+```
+curl -sk \
+https://example.com/openapi.json \
+| jq '.'
+```
+
+ Swagger:
+
+```
+curl -sk \
+https://example.com/swagger.json \
+| jq '.'
+```
+
+ GraphQL:
+
+```
+curl -sk \
+-i \
+https://example.com/graphql
+```
+
+ > Only perform deeper API testing or introspection when permitted by the target.
+
+---
+
+ # 🎛️ 17. Parameter Discovery
+
+ Extract parameters:
+
+```
+grep '?' urls.txt \
+| sed 's/^[^?]*?//' \
+| tr '&' '\n' \
+| cut -d= -f1 \
+| sort -u \
+> parameters.txt
+```
+
+ Arjun:
+
+```
+arjun \
+-u https://example.com/search
+```
+
+ GET:
+
+```
+arjun \
+-u https://example.com/search \
+-m GET
+```
+
+ List:
+
+```
+arjun \
+-i parameterized.txt \
+-oT arjun.txt
+```
+
+---
+
+ # 📁 18. Content Discovery
+
+ ## FFUF
+
+ Basic:
+
+```
+ffuf \
+-u https://example.com/FUZZ \
+-w /path/to/wordlist.txt \
+-mc 200,204,301,302,307,401,403
+```
+
+ Extensions:
+
+```
+ffuf \
+-u https://example.com/FUZZ \
+-w /path/to/wordlist.txt \
+-e .js,.json,.txt,.xml,.bak \
+-mc 200,204,301,302,307,401,403
+```
+
+ Filter 404:
+
+```
+ffuf \
+-u https://example.com/FUZZ \
+-w /path/to/wordlist.txt \
+-fc 404 \
+-rate 50
+```
+
+ JSON:
+
+```
+ffuf \
+-u https://example.com/FUZZ \
+-w /path/to/wordlist.txt \
+-o ffuf.json \
+-of json
+```
+
+---
+
+ ## Feroxbuster
+
+```
+feroxbuster \
+-u https://example.com \
+-w /path/to/wordlist.txt
+```
+
+ Extensions:
+
+```
+feroxbuster \
+-u https://example.com \
+-w /path/to/wordlist.txt \
+-x js,json,txt,xml,bak
+```
+
+ Lower concurrency:
+
+```
+feroxbuster \
+-u https://example.com \
+-w /path/to/wordlist.txt \
+-t 10
+```
+
+---
+
+ ## Gobuster
+
+ Directory:
+
+```
+gobuster dir \
+-u https://example.com \
+-w /path/to/wordlist.txt
+```
+
+ Extensions:
+
+```
+gobuster dir \
+-u https://example.com \
+-w /path/to/wordlist.txt \
+-x js,json,txt,php
+```
+
+ DNS:
+
+```
+gobuster dns \
+-d example.com \
+-w /path/to/subdomains.txt
+```
+
+ Virtual hosts:
+
+```
+gobuster vhost \
+-u https://example.com \
+-w /path/to/vhosts.txt
+```
+
+---
+
+ # 🧪 19. Automated Checks
+
+ ## Nuclei
+
+```
+nuclei \
+-l live-urls.txt \
+-tags misconfig,exposure,tech \
+-rate-limit 5 \
+-concurrency 5 \
+-o nuclei.txt
+```
+
+ Single target:
+
+```
+nuclei \
+-u https://example.com \
+-tags misconfig,exposure,tech \
+-rate-limit 2
+```
+
+ JSONL:
+
+```
+nuclei \
+-l live-urls.txt \
+-jsonl \
+-o nuclei.jsonl
+```
+
+ List templates:
+
+```
+nuclei -tl
+```
+
+ > Keep scans within the target's permitted rate and template restrictions.
+
+---
+
+ # 🧰 20. Manual HTTP Inspection
+
+ ## Headers
+
+```
+curl -skI https://example.com/
+```
+
+ ## Redirects
+
+```
+curl -skIL https://example.com/
+```
+
+ ## Save Headers and Body
+
+```
+curl -sk \
+-D headers.txt \
+-o body.html \
+https://example.com/
+```
+
+ ## OPTIONS
+
+```
+curl -sk \
+-X OPTIONS \
+-i \
+https://example.com/
+```
+
+ ## robots.txt
+
+```
+curl -sk \
+https://example.com/robots.txt
+```
+
+ ## sitemap.xml
+
+```
+curl -sk \
+https://example.com/sitemap.xml
+```
+
+ ## security.txt
+
+```
+curl -sk \
+https://example.com/.well-known/security.txt
+```
+
+---
+
+ # 🍪 21. Cookie Inspection
+
+ Inspect cookies:
+
+```
+curl -skI \
+https://example.com/login \
+| grep -i '^set-cookie:'
+```
+
+ Save cookies:
+
+```
+curl -sk \
+-c cookies.txt \
+https://example.com/login \
+-o /dev/null
+```
+
+ Reuse permitted session:
+
+```
+curl -sk \
+-b cookies.txt \
+https://example.com/ \
+-o /dev/null
+```
+
+ > Never attempt to obtain or reuse another person's session.
+
+---
+
+ # 🧑‍💻 22. Public Source-Code Recon
+
+ Clone:
+
+```
+git clone https://github.com/ORG/REPO.git
+```
+
+ History:
+
+```
+git -C REPO log --all --oneline
+```
+
+ Historical files:
+
+```
+git -C REPO log \
+--all \
+--name-only \
+--pretty=format: \
+| sort -u
+```
+
+ Branches:
+
+```
+git -C REPO branch -a
+```
+
+ Remotes:
+
+```
+git -C REPO remote -v
+```
+
+ Search history:
+
+```
+git -C REPO grep \
+-nEi \
+'api[_-]?key|secret|token|authorization' \
+$(git -C REPO rev-list --all) \
+2>/dev/null \
+| head -n 200
+```
+
+ > Only investigate intentionally public repositories and authorized research targets. Do not use discovered credentials or tokens unless explicitly authorized.
+
+---
+
+ # 🔬 23. Service-Specific Enumeration
+
+ ## FTP
+
+```
+nmap \
+-p21 \
+-sV \
+--script ftp-anon,ftp-syst \
+203.0.113.10
+```
+
+ ## SSH
+
+```
+nmap \
+-p22 \
+-sV \
+--script ssh2-enum-algos,ssh-hostkey \
+203.0.113.10
+```
+
+ ## SMTP
+
+```
+nmap \
+-p25,465,587 \
+-sV \
+--script smtp-commands \
+203.0.113.10
+```
+
+ ## DNS
+
+```
+nmap \
+-p53 \
+-sV \
+--script dns-recursion,dns-service-discovery \
+203.0.113.10
+```
+
+ ## Redis
+
+```
+nmap \
+-p6379 \
+-sV \
+203.0.113.10
+```
+
+ ## MongoDB
+
+```
+nmap \
+-p27017 \
+-sV \
+203.0.113.10
+```
+
+ ## MySQL / PostgreSQL
+
+```
+nmap \
+-p3306,5432 \
+-sV \
+203.0.113.10
+```
+
+---
+
+ # 🎯 Targeted Hunting
+
+ ## API
+
+```
+grep -Ei \
+'api|graphql|swagger|openapi' \
+urls.txt \
+| sort -u \
+> api.txt
+```
+
+ ## Admin
+
+```
+grep -Ei \
+'admin|administrator|dashboard|manage|panel' \
+urls.txt \
+| sort -u \
+> admin.txt
+```
+
+ ## Authentication
+
+```
+grep -Ei \
+'login|signin|signup|register|oauth|sso|auth|session' \
+urls.txt \
+| sort -u \
+> auth.txt
+```
+
+ ## Upload / Download
+
+```
+grep -Ei \
+'upload|download|file|attachment|import|export' \
+urls.txt \
+| sort -u \
+> files.txt
+```
+
+ ## Debug / Internal
+
+```
+grep -Ei \
+'debug|internal|test|staging|dev|development' \
+urls.txt \
+| sort -u \
+> internal.txt
+```
+
+ ## JavaScript
+
+```
+grep -Ei \
+'\.js([?#]|$)' \
+urls.txt \
+| sort -u \
+> javascript.txt
+```
+
+ ## Parameters
+
+```
+grep -E '\?.+=' \
+urls.txt \
+| sort -u \
+> parameterized.txt
+```
+
+---
+
+ # ⚡ Top Commands Cheat Sheet
+
+ ## Subdomains
+
+```
+subfinder -d example.com -silent -o subdomains.txt
+```
+
+ ## Certificate Discovery
+
+```
+curl -s 'https://crt.sh/?q=%25.example.com&output=json' \
+| jq -r '.[].name_value' \
+| sort -u
+```
+
+ ## DNS
+
+```
+dnsx -l subdomains.txt -silent -a -resp
+```
+
+ ## Live Hosts
+
+```
+httpx -l subdomains.txt -silent -status-code -title -tech-detect
+```
+
+ ## Ports
+
+```
+naabu -list ips.txt -top-ports 100 -silent
+```
+
+ ## Service Detection
+
+```
+nmap -sC -sV 203.0.113.10
+```
+
+ ## Crawl
+
+```
+katana -list live-urls.txt -silent
+```
+
+ ## Historical URLs
+
+```
+gau --subs example.com | sort -u
+```
+
+ ## JavaScript
+
+```
+grep -Ei '\.js([?#]|$)' urls.txt | sort -u
+```
+
+ ## API Paths
+
+```
+grep -Ei 'api|graphql|swagger|openapi' urls.txt | sort -u
+```
+
+ ## Parameters
+
+```
+grep -E '\?.+=' urls.txt | sort -u
+```
+
+ ## Content Discovery
+
+```
+ffuf \
+-u https://example.com/FUZZ \
+-w /path/to/wordlist.txt \
+-mc 200,204,301,302,307,401,403
+```
+
+ ## Automated Checks
+
+```
+nuclei \
+-l live-urls.txt \
+-tags misconfig,exposure,tech \
+-rate-limit 5
+```
+
+---
+
+ # 🧠 Practical Workflow
+
+```
+# 1. Discover
+subfinder -d example.com -silent -o subdomains.txt
+
+# 2. Resolve
+dnsx -l subdomains.txt -silent -a -resp -o dns.txt
+
+# 3. Find live applications
+httpx -l subdomains.txt \
+-silent \
+-status-code \
+-title \
+-tech-detect \
+-follow-redirects \
+-o live.txt
+
+# 4. Extract live URLs
+awk '{print $1}' live.txt | sort -u > live-urls.txt
+
+# 5. Crawl
+katana -list live-urls.txt \
+-silent \
+-o endpoints.txt
+
+# 6. Historical discovery
+gau --subs example.com | sort -u > gau.txt
+waybackurls example.com | sort -u > wayback.txt
+
+# 7. Combine
+cat endpoints.txt gau.txt wayback.txt \
+| sort -u > urls.txt
+
+# 8. Find interesting areas
+grep -Ei \
+'api|graphql|admin|internal|debug|login|oauth|upload|download' \
+urls.txt \
+| sort -u \
+> interesting.txt
+
+# 9. Find parameters
+grep -E '\?.+=' urls.txt \
+| sort -u \
+> parameterized.txt
+
+# 10. JavaScript
+grep -Ei '\.js([?#]|$)' urls.txt \
+| sort -u \
+> javascript.txt
+```
+
+ > **The goal is not to run every tool against everything.**
+>
+>  **The goal is to reduce the attack surface into smaller, more useful datasets.**
+
+---
+
+ # 📂 Recommended Project Structure
+
+```
+K7R3/
 ├── README.md
 ├── LICENSE
 ├── install.sh
@@ -358,8 +1519,7 @@ reconforge/
 │   ├── javascript/
 │   ├── api/
 │   ├── cloud/
-│   ├── osint/
-│   └── vulnerability/
+│   └── osint/
 │
 ├── data/
 │   ├── raw/
@@ -367,887 +1527,199 @@ reconforge/
 │   ├── screenshots/
 │   └── reports/
 │
-└── output/
-    ├── subdomains.txt
-    ├── dns.txt
-    ├── ips.txt
-    ├── live.txt
-    ├── ports.txt
-    ├── services.txt
-    ├── urls.txt
-    ├── historical.txt
-    ├── javascript.txt
-    ├── endpoints.txt
-    ├── parameters.txt
-    └── technologies.json
-
-Keep raw data.
-
-Never overwrite the original discovery data unnecessarily.
+├── output/
+│
+└── logs/
+```
 
 ---
 
-6. Installation
+ # ⚙️ Example Scope Configuration
 
-Recommended systems:
-
-- Kali Linux
-- Ubuntu
-- Debian
-- Parrot OS
-
-Install base packages:
-
-sudo apt update
-
-sudo apt install -y \
-  git \
-  curl \
-  wget \
-  jq \
-  unzip \
-  dnsutils \
-  whois \
-  python3 \
-  python3-pip
-
-Install Go:
-
-sudo apt install -y golang
-
-Check:
-
-go version
-
-Create Go binary directory:
-
-mkdir -p "$HOME/go/bin"
-
-Add it to PATH:
-
-echo 'export PATH="$PATH:$HOME/go/bin"' >> "$HOME/.bashrc"
-source "$HOME/.bashrc"
-
-Verify:
-
-echo "$PATH"
-
----
-
-7. ProjectDiscovery Installation
-
-Install:
-
-go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
-go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
-go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
-go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
-go install -v github.com/projectdiscovery/katana/cmd/katana@latest
-go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
-
-Verify:
-
-subfinder -h
-dnsx -h
-httpx -h
-naabu -h
-katana -h
-nuclei -h
-
-Update Nuclei templates:
-
-nuclei -update-templates
-
----
-
-8. Amass Installation
-
-Install:
-
-go install -v github.com/owasp-amass/amass/v4/...@master
-
-Verify:
-
-amass -h
-
-Useful modes:
-
-amass enum
-amass intel
-amass viz
-amass track
-amass db
-
----
-
-9. Scope Management
-
-Create:
-
-mkdir -p config output data/raw data/normalized
-
-Example "config/scope.yaml":
+```
+target:
+  root_domains:
+    - example.com
 
 scope:
-  domains:
-    - example.com
+  include:
     - "*.example.com"
+    - "example.com"
 
-  ips:
-    - "203.0.113.10"
+  exclude:
+    - "status.example.com"
+    - "thirdparty.example.com"
 
-  urls:
-    - "https://example.com"
-
-  exclusions:
-    - "thirdparty.example.net"
-
-rules:
-  respect_rate_limits: true
-  no_destructive_testing: true
-  no_credential_attacks: true
-  no_unauthorized_access: true
-
-Set your target:
-
-export TARGET="example.com"
-
-Create workspace:
-
-mkdir -p "data/$TARGET"
-mkdir -p "data/$TARGET"/{raw,normalized,screenshots,reports}
-mkdir -p "output/$TARGET"
-
-Use one directory per target.
+ports:
+  - 80
+  - 443
+  - 8080
+  - 8443
+```
 
 ---
 
-10. Phase 0 — Target Profiling
+ # 📊 Useful Output Files
 
-Before running scanners, understand the organization.
+```
+output/
+├── subdomains.txt
+├── crtsh.txt
+├── dns.txt
+├── live.txt
+├── live-urls.txt
+├── ports.txt
+├── endpoints.txt
+├── gau.txt
+├── wayback.txt
+├── urls.txt
+├── interesting.txt
+├── interesting-files.txt
+├── parameterized.txt
+├── javascript.txt
+├── js-hosts.txt
+├── source-maps.txt
+├── api.txt
+├── admin.txt
+├── auth.txt
+└── nuclei.txt
+```
 
-Record:
+---
 
-Root domain
+ # 🧭 K7R3 Methodology
+
+```
+DISCOVER
+    ↓
+ENUMERATE
+    ↓
+RESOLVE
+    ↓
+PROBE
+    ↓
+FINGERPRINT
+    ↓
+SCAN
+    ↓
+CRAWL
+    ↓
+COLLECT
+    ↓
+FILTER
+    ↓
+INVESTIGATE
+    ↓
+VALIDATE
+```
+
+ ### Discover
+
+ Find domains, subdomains, certificates, and related infrastructure.
+
+ ### Enumerate
+
+ Resolve discovered hosts and identify their network relationships.
+
+ ### Probe
+
+ Determine which hosts expose HTTP/HTTPS services.
+
+ ### Fingerprint
+
+ Identify technologies, servers, frameworks, and WAFs.
+
+ ### Scan
+
+ Identify exposed ports and services where permitted.
+
+ ### Crawl
+
+ Map application routes, forms, links, and JavaScript.
+
+ ### Collect
+
+ Pull historical URLs and public references.
+
+ ### Filter
+
+ Separate APIs, parameters, authentication pages, files, admin paths, and other useful targets.
+
+ ### Investigate
+
+ Manually understand the application and its behavior.
+
+ ### Validate
+
+ Verify security findings carefully and within the target's rules.
+
+---
+
+ # 🔥 Philosophy
+
+ > **Good reconnaissance is not about collecting the most data. It's about finding the data that leads somewhere.**
+
+```
+Large Target
+     ↓
 Subdomains
-Brand names
-Known applications
-Known APIs
-Technology
-CMS
-CDN
-WAF
-Cloud provider
-Hosting provider
-Authentication provider
-Mobile applications
-Public repositories
-Third-party integrations
+     ↓
+Live Assets
+     ↓
+Technologies
+     ↓
+Endpoints
+     ↓
+Parameters
+     ↓
+Interesting Functionality
+     ↓
+Manual Investigation
+```
 
-Basic:
-
-whois "$TARGET"
-
-DNS:
-
-dig "$TARGET" A
-dig "$TARGET" AAAA
-dig "$TARGET" MX
-dig "$TARGET" NS
-dig "$TARGET" TXT
-dig "$TARGET" CNAME
-
-HTTP:
-
-curl -skI "https://$TARGET"
-
-Questions:
-
-Who owns the domain?
-
-Where is DNS hosted?
-
-Is there a CDN?
-
-Is there a WAF?
-
-Which cloud provider appears to be involved?
-
-Which applications are public?
-
-Which authentication systems are used?
-
-Are APIs exposed?
-
-Are development environments visible?
-
-Are there mobile applications?
-
-Are there public repositories?
-
-Do not start by scanning everything.
-
-Build the target model first.
+ Every stage should make the next stage smaller and more useful.
 
 ---
 
-11. Phase 1 — Passive Reconnaissance
+ # 🤝 Contributing
 
-Passive sources can reveal:
+ Contributions are welcome.
 
-- Certificate names
-- DNS records
-- Historical infrastructure
-- Public repositories
-- Search engine results
-- Public documentation
-- Archived URLs
-- Technology information
-- Public IP information
-- Previously exposed applications
+ Useful contributions include:
 
-Useful sources/tools:
+ - New practical reconnaissance modules
+- Better command examples
+- Improved automation
+- Bug fixes
+- Scope-aware workflows
+- Documentation improvements
+- Useful wordlist recommendations
+- Performance improvements
 
-Certificate Transparency
-Search engines
-DNS/RDAP/WHOIS
-Git repositories
-Web archives
-Internet indexes
-Threat-intelligence platforms
-Public datasets
-Vendor documentation
-
-Basic search:
-
-site:example.com
-
-Subdomain-focused search:
-
-site:example.com -www
-
-Look for naming patterns:
-
-dev
-development
-stage
-staging
-test
-qa
-uat
-beta
-demo
-admin
-portal
-api
-internal
-vpn
-mail
-legacy
-old
-
-Important:
-
-Hostname discovery != vulnerability
-
-Treat every finding as a lead.
+ Please keep contributions practical and focused.
 
 ---
 
-12. Phase 2 — Subdomain Enumeration
+ # 📜 License
 
-Start with Subfinder:
-
-subfinder -d "$TARGET" -silent
-
-Save:
-
-subfinder -d "$TARGET" -silent -o subfinder.txt
-
-Use multiple domains:
-
-subfinder -dL domains.txt -silent -o subdomains.txt
-
-Broader source collection:
-
-subfinder -d "$TARGET" -all -silent -o subfinder-all.txt
-
-JSON:
-
-subfinder -d "$TARGET" -json -o subfinder.json
-
-Amass:
-
-amass enum -passive -d "$TARGET" -o amass.txt
-
-Verbose source information:
-
-amass enum -passive -d "$TARGET" -v -src -o amass-source.txt
-
-Merge:
-
-cat subfinder.txt amass.txt | sort -u > all-subdomains.txt
-
-Clean:
-
-sed '/^$/d' all-subdomains.txt | sort -u > subdomains-clean.txt
-
-Count:
-
-wc -l subdomains-clean.txt
-
-Do not optimize for the count.
-
-Optimize for useful assets.
+ See `LICENSE` for the repository license.
 
 ---
 
-13. Phase 3 — Certificate Transparency
+ # ⭐ Support K7R3
 
-Certificate logs are excellent for historical and current hostname discovery.
+ If this methodology helps your research:
 
-Query:
-
-curl -s \
-  "https://crt.sh/?q=%25.$TARGET&output=json" |
-jq -r '.[].name_value' |
-tr '\r' '\n' |
-sort -u
-
-Save:
-
-curl -s \
-  "https://crt.sh/?q=%25.$TARGET&output=json" |
-jq -r '.[].name_value' |
-tr '\r' '\n' |
-sort -u > crtsh.txt
-
-Merge:
-
-cat subdomains-clean.txt crtsh.txt |
-sort -u > all-subdomains.txt
-
-Find interesting labels:
-
-grep -Ei \
-'(^|\.)(dev|development|stage|staging|test|qa|uat|beta|demo|admin|portal|api|internal|vpn|legacy|old)\.' \
-all-subdomains.txt
-
-Again:
-
-Interesting hostname != vulnerability
-
-It simply deserves investigation.
+ - ⭐ Star the repository
+- 🐛 Report issues
+- 💡 Suggest improvements
+- 🔧 Contribute useful modules
+- 📚 Share practical reconnaissance techniques
 
 ---
 
-14. Phase 4 — DNS Enumeration
+ # K7R3
 
-Resolve discovered hosts:
+ > **Recon smarter. Reduce the surface. Follow the data.**
 
-dnsx -l all-subdomains.txt -silent
 
-Save:
-
-dnsx \
-  -l all-subdomains.txt \
-  -silent \
-  -o resolved.txt
-
-Collect A records:
-
-dnsx \
-  -l all-subdomains.txt \
-  -a \
-  -resp \
-  -silent \
-  -o dns-a.txt
-
-Collect AAAA:
-
-dnsx \
-  -l all-subdomains.txt \
-  -aaaa \
-  -resp \
-  -silent \
-  -o dns-aaaa.txt
-
-CNAME:
-
-dnsx \
-  -l all-subdomains.txt \
-  -cname \
-  -resp \
-  -silent \
-  -o dns-cname.txt
-
-MX:
-
-dnsx \
-  -l all-subdomains.txt \
-  -mx \
-  -resp \
-  -silent \
-  -o dns-mx.txt
-
-NS:
-
-dnsx \
-  -l all-subdomains.txt \
-  -ns \
-  -resp \
-  -silent \
-  -o dns-ns.txt
-
-TXT:
-
-dnsx \
-  -l all-subdomains.txt \
-  -txt \
-  -resp \
-  -silent \
-  -o dns-txt.txt
-
-Combined:
-
-dnsx \
-  -l all-subdomains.txt \
-  -a -aaaa -cname -mx -ns -txt \
-  -resp \
-  -silent \
-  -o dns.txt
-
-Questions:
-
-Which hosts resolve?
-
-Which IPs are shared?
-
-Which domains point to cloud infrastructure?
-
-Which hosts use CDN infrastructure?
-
-Which hosts have unusual CNAMEs?
-
-Are development systems separated?
-
-Are mail systems external?
-
-Are third-party SaaS providers involved?
-
----
-
-15. Phase 5 — IP & ASN Mapping
-
-For a specific host:
-
-dig "$TARGET" A +short
-
-IPv6:
-
-dig "$TARGET" AAAA +short
-
-CNAME:
-
-dig "$TARGET" CNAME +short
-
-MX:
-
-dig "$TARGET" MX +short
-
-NS:
-
-dig "$TARGET" NS +short
-
-TXT:
-
-dig "$TARGET" TXT +short
-
-WHOIS:
-
-whois "$TARGET"
-
-For each discovered IP, record:
-
-Hostname
-IP
-ASN
-Provider
-Cloud
-Region
-Reverse DNS
-CDN
-Load balancer
-Shared infrastructure
-
-Conceptually:
-
-domain
-  ↓
-DNS
-  ↓
-IP
-  ↓
-ASN
-  ↓
-provider
-  ↓
-infrastructure
-
-Do not assume every IP associated with a hostname belongs exclusively to the target.
-
-Cloud and CDN infrastructure are frequently shared.
-
----
-
-16. Phase 6 — HTTP Discovery
-
-Probe HTTP services:
-
-httpx \
-  -l all-subdomains.txt \
-  -silent
-
-Save:
-
-httpx \
-  -l all-subdomains.txt \
-  -silent \
-  -o live.txt
-
-Status code:
-
-httpx \
-  -l all-subdomains.txt \
-  -status-code \
-  -silent
-
-Title:
-
-httpx \
-  -l all-subdomains.txt \
-  -title \
-  -silent
-
-Technology:
-
-httpx \
-  -l all-subdomains.txt \
-  -tech-detect \
-  -silent
-
-Web server:
-
-httpx \
-  -l all-subdomains.txt \
-  -web-server \
-  -silent
-
-Follow redirects:
-
-httpx \
-  -l all-subdomains.txt \
-  -follow-redirects \
-  -silent
-
-Combined:
-
-httpx \
-  -l all-subdomains.txt \
-  -status-code \
-  -title \
-  -tech-detect \
-  -web-server \
-  -follow-redirects \
-  -silent \
-  -o live-detailed.txt
-
-JSON:
-
-httpx \
-  -l all-subdomains.txt \
-  -status-code \
-  -title \
-  -tech-detect \
-  -web-server \
-  -follow-redirects \
-  -json \
-  -o httpx.json
-
-Extract URLs:
-
-jq -r '.url // empty' httpx.json |
-sort -u > live.txt
-
----
-
-17. Phase 7 — Technology Fingerprinting
-
-WhatWeb:
-
-whatweb "https://$TARGET"
-
-Verbose:
-
-whatweb -v "https://$TARGET"
-
-Higher aggression:
-
-whatweb -a 1 "https://$TARGET"
-
-Fingerprint:
-
-Web server
-Framework
-CMS
-JavaScript libraries
-Programming language
-Analytics
-CDN
-Reverse proxy
-Security products
-
-Technology fingerprints are leads.
-
-Do not treat fingerprints as proof.
-
-Confirm important technologies through:
-
-HTTP headers
-HTML
-JavaScript
-Error pages
-Asset names
-Response behavior
-Public documentation
-Version information
-
----
-
-18. Phase 8 — WAF/CDN Detection
-
-Run:
-
-wafw00f "https://$TARGET"
-
-Multiple URLs:
-
-wafw00f -i live.txt
-
-Record:
-
-WAF
-CDN
-Reverse proxy
-Gateway
-Load balancer
-
-WAF detection is for infrastructure understanding.
-
-Do not treat it as an invitation to bypass security controls.
-
----
-
-19. Phase 9 — Port Discovery
-
-Naabu:
-
-naabu -host "$TARGET"
-
-Save:
-
-naabu \
-  -host "$TARGET" \
-  -o ports.txt
-
-Specific ports:
-
-naabu \
-  -host "$TARGET" \
-  -p 80,443,8080,8443 \
-  -o web-ports.txt
-
-Multiple hosts:
-
-naabu \
-  -list all-subdomains.txt \
-  -o ports.txt
-
-JSON:
-
-naabu \
-  -list all-subdomains.txt \
-  -json \
-  -o ports.json
-
-A practical flow:
-
-Subdomains
-    ↓
-Resolve
-    ↓
-HTTP discovery
-    ↓
-Port discovery
-    ↓
-Interesting ports
-    ↓
-Detailed service enumeration
-
-Avoid scanning networks that are not explicitly authorized.
-
----
-
-20. Phase 10 — Service Enumeration
-
-Nmap basic:
-
-nmap "$TARGET"
-
-Service detection:
-
-nmap -sV "$TARGET"
-
-Default scripts:
-
-nmap -sC -sV "$TARGET"
-
-Specific ports:
-
-nmap -sC -sV -p 80,443,8080,8443 "$TARGET"
-
-Save:
-
-nmap \
-  -sC -sV \
-  -p 80,443,8080,8443 \
-  -oN nmap.txt \
-  "$TARGET"
-
-XML:
-
-nmap \
-  -sC -sV \
-  -p 80,443,8080,8443 \
-  -oX nmap.xml \
-  "$TARGET"
-
-All TCP ports:
-
-nmap -p- "$TARGET"
-
-Use full port scans only where scope and program rules permit them.
-
-Recommended workflow:
-
-Naabu
-  ↓
-Interesting ports
-  ↓
-Nmap
-  ↓
-Service/version
-  ↓
-Manual research
-
----
-
-21. Phase 11 — TLS Enumeration
-
-SSLScan:
-
-sslscan "$TARGET:443"
-
-Save:
-
-sslscan "$TARGET:443" > sslscan.txt
-
-Inspect:
-
-Certificate
-Issuer
-Subject
-SANs
-Expiration
-Protocols
-Ciphers
-Certificate chain
-HSTS
-STARTTLS
-
-For TLS-related research, also inspect:
-
-openssl s_client \
-  -connect "$TARGET:443" \
-  -servername "$TARGET"
-
-Certificate:
-
-openssl s_client \
-  -connect "$TARGET:443" \
-  -servername "$TARGET" \
-  </dev/null 2>/dev/null |
-openssl x509 -noout -subject -issuer -dates -ext subjectAltName
-
-Certificate SANs can reveal additional hostnames.
-
----
-
-22. Phase 12 — Web Crawling
-
-Katana:
-
-katana \
-  -u "https://$TARGET" \
-  -silent
-
-Save:
-
-katana \
-  -u "https://$TARGET" \
-  -silent \
-  -o crawl.txt
-
-JSONL:
-
-katana \
-  -u "https://$TARGET" \
-  -jsonl \
-  -o crawl.jsonl
-
-Multiple targets:
-
-katana \
-  -list live.txt \
-  -silent \
-  -o endpoints.txt
-
-Look for:
-
-/api/
-/api/v1/
-/api/v2/
-/graphql
-/login
-/logout
-/oauth
-/admin
-/upload
-/download
-/search
-/export
-/internal
-/debug
-/health
-/status
-/docs
-/swagger
-
-Extract unique URLs:
-
-cat crawl.txt |
-sort -u > urls.txt
-
-The crawl is a map.
-
-It is not automatically a vulnera
